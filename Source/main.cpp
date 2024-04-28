@@ -13,18 +13,25 @@
 int
 child_function(void *arg)
 {
+	Namespace ns { Namespace::Config {
+		 .mountPoint = "/home/yogesh/Desktop/rootfs",
+		 .hostname   = "mocker",
+	} };
+
+	auto res = ns.Init();
+	if (!res)
+	{
+		printf("ERROR: %d", res.error->GetCode());
+		// std::cerr << res.error->GetMessage() << std::endl;
+		return 1;
+	}
+
 	// Retrieve the command and arguments from the passed argument
 	auto *data =
 		 reinterpret_cast<std::pair<std::string, std::vector<std::string>> *>(
 			  arg);
 	const std::string              &command = data->first;
 	const std::vector<std::string> &args    = data->second;
-
-	Namespace ns { Namespace::Config {
-		 .mountPoint = "/home/yogesh/Desktop/rootfs",
-		 .hostname   = "mocker",
-	} };
-	ns.Init();
 
 	// Prepare the arguments for execv
 	const char *execArgs[1 + args.size() + 1] = { command.c_str() };
@@ -56,9 +63,9 @@ main()
 	}
 
 	// Prepare command and arguments for the child process
-	std::string              command = "/bin/sh";
-	std::vector<std::string> args;
-	auto                     arg = std::make_pair(command, args);
+	std::string              command = "/bin/echo";
+	std::vector<std::string> args    = { "Hello, World!" };
+	auto                     arg     = std::make_pair(command, args);
 
 	// Clone a new process
 	int result = clone(child_function, stack + stack_size, clone_flags, &arg);
