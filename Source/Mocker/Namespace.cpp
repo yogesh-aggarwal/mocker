@@ -269,7 +269,18 @@ Namespace::MountVirtualFileSystem() const
 {
 	Result<int> res { false };
 
+	// ------------------------------------------------------------------------
 	// Mount /proc
+	// ------------------------------------------------------------------------
+
+	res = Syscall::MKDIR("proc", 0755);
+	if (!res && res.error->GetCode() != ErrorCode::MKDIR_EXISTED)
+	{
+		return Result<bool> {
+			false,
+			new Error(MKDIR_FAILED, "Failed to create /proc directory"),
+		};
+	}
 	res = Syscall::MOUNT("proc", "/proc", "proc", 0, NULL);
 	if (!res)
 	{
@@ -279,7 +290,10 @@ Namespace::MountVirtualFileSystem() const
 		};
 	}
 
+	// ------------------------------------------------------------------------
 	// Mount /sys
+	// ------------------------------------------------------------------------
+
 	res = Syscall::MOUNT("sysfs", "/sys", "sysfs", 0, NULL);
 	if (!res)
 	{
@@ -289,7 +303,10 @@ Namespace::MountVirtualFileSystem() const
 		};
 	}
 
+	// ------------------------------------------------------------------------
 	// Mount /dev
+	// ------------------------------------------------------------------------
+
 	res = Syscall::MOUNT("udev", "/dev", "devtmpfs", 0, NULL);
 	if (!res)
 	{
@@ -299,7 +316,10 @@ Namespace::MountVirtualFileSystem() const
 		};
 	}
 
+	// ------------------------------------------------------------------------
 	// Mount /dev/pts
+	// ------------------------------------------------------------------------
+
 	res = Syscall::MOUNT("devpts", "/dev/pts", "devpts", 0, NULL);
 	if (!res)
 	{
@@ -309,7 +329,10 @@ Namespace::MountVirtualFileSystem() const
 		};
 	}
 
+	// ------------------------------------------------------------------------
 	// Mount /dev/shm
+	// ------------------------------------------------------------------------
+
 	res = Syscall::MOUNT("tmpfs", "/dev/shm", "tmpfs", 0, NULL);
 	if (!res)
 	{
@@ -318,6 +341,8 @@ Namespace::MountVirtualFileSystem() const
 			new Error(MOUNT_FAILED, "Failed to mount /dev/shm"),
 		};
 	}
+
+	// ------------------------------------------------------------------------
 
 	return { true };
 }

@@ -40,7 +40,7 @@ Syscall::MOUNT(const std::string &source,
 					const void        *data)
 {
 	int ret = mount(source.c_str(), target.c_str(), fsType, mountFlags, data);
-	if (ret == -1 && errno != ENOENT && errno != EPERM)
+	if (ret == -1)
 	{
 		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
