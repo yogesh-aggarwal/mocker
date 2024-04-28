@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mocker/Core/Result.hpp>
+#include <Mocker/Core/Result.tcc>
 
 namespace Syscall
 {

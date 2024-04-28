@@ -27,22 +27,22 @@ private:
 public:
 	Namespace(const Config &config);
 
-	Result<void>
+	Result<bool>
 	Init() const;
 
 private:
-	Result<void>
+	Result<bool>
 	SetupLoggingIO() const;
 
-	Result<void>
+	Result<bool>
 	SetupUser() const;
 
-	Result<void>
+	Result<bool>
 	SetupMounting() const;
 
-	Result<void>
+	Result<bool>
 	MountVirtualFileSystem() const;
 
-	Result<void>
+	Result<bool>
 	SetupHostname(const std::string &hostname) const;
 };

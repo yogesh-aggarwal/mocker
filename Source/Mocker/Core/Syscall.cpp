@@ -7,7 +7,7 @@
 #include <memory>
 
 #include <Mocker/Core/Error.hpp>
-#include <Mocker/Core/Result.hpp>
+#include <Mocker/Core/Result.tcc>
 
 //-----------------------------------------------------------------------------
 
@@ -24,10 +24,10 @@ Syscall::MKDIR(const std::string &path, mode_t mode)
 		case EEXIST: code = ErrorCode::MKDIR_EXISTED; break;
 		}
 
-		return Result<int> { new Error(code) };
+		return Result<int> { -1, new Error(code) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -46,10 +46,10 @@ Syscall::MOUNT(const std::string &source,
 						 data);
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::Unknown) };
+		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -60,10 +60,10 @@ Syscall::CHDIR(const std::string &path)
 	int ret = chdir(path.c_str());
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::Unknown) };
+		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -74,10 +74,10 @@ Syscall::PIVOT_ROOT(const std::string &new_root, const std::string &put_old)
 	int ret = syscall(SYS_pivot_root, new_root.c_str(), put_old.c_str());
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::Unknown) };
+		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -88,10 +88,10 @@ Syscall::UMOUNT2(const std::string &target, int flags)
 	int ret = umount2(target.c_str(), flags);
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::Unknown) };
+		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -102,10 +102,10 @@ Syscall::RMDIR(const std::string &path)
 	int ret = rmdir(path.c_str());
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::Unknown) };
+		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -116,10 +116,10 @@ Syscall::DUP2(int oldfd, int newfd)
 	int ret = dup2(oldfd, newfd);
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::Unknown) };
+		return Result<int> { -1, new Error(ErrorCode::Unknown) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
@@ -130,10 +130,10 @@ Syscall::SETHOSTNAME(const std::string &name)
 	int ret = sethostname(name.c_str(), name.size());
 	if (ret == -1)
 	{
-		return Result<int> { new Error(ErrorCode::SETHOSTNAME_FAILED) };
+		return Result<int> { -1, new Error(ErrorCode::SETHOSTNAME_FAILED) };
 	}
 
-	return Result<int> { &ret };
+	return Result<int> { ret };
 }
 
 //-----------------------------------------------------------------------------
