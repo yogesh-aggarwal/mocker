@@ -44,5 +44,5 @@ private:
 	MountVirtualFileSystem() const;
 
 	Result<bool>
-	SetupHostname(const std::string &hostname) const;
+	SetupHostname() const;
 };

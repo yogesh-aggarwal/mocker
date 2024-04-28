@@ -61,7 +61,7 @@ Namespace::Init() const
 		};
 	}
 
-	res = SetupHostname(m_Config.hostname);
+	res = SetupHostname();
 	if (!res)
 	{
 		return Result<bool> {
@@ -325,9 +325,9 @@ Namespace::MountVirtualFileSystem() const
 //-----------------------------------------------------------------------------
 
 Result<bool>
-Namespace::SetupHostname(const std::string &hostname) const
+Namespace::SetupHostname() const
 {
-	Result<int> res = Syscall::SETHOSTNAME(hostname);
+	Result<int> res = Syscall::SETHOSTNAME(m_Config.hostname);
 	if (!res)
 	{
 		return Result<bool> {
