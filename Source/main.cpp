@@ -63,8 +63,8 @@ main()
 	}
 
 	// Prepare command and arguments for the child process
-	std::string              command = "/bin/echo";
-	std::vector<std::string> args    = { "Hello, World!" };
+	std::string              command = "/bin/sh";
+	std::vector<std::string> args    = {};
 	auto                     arg     = std::make_pair(command, args);
 
 	// Clone a new process

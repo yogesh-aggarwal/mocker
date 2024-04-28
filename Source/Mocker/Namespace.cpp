@@ -42,6 +42,16 @@ Namespace::Init() const
 		};
 	}
 
+	res = SetupHostname();
+	if (!res)
+	{
+		return Result<bool> {
+			false,
+			new Error(MOCKER_NAMESPACE_ERROR_SETUP_HOSTNAME,
+						 "Failed to setup hostname"),
+		};
+	}
+
 	res = SetupUser();
 	if (!res)
 	{
@@ -58,16 +68,6 @@ Namespace::Init() const
 			false,
 			new Error(MOCKER_NAMESPACE_ERROR_SETUP_MOUNT,
 						 "Failed to setup mounting"),
-		};
-	}
-
-	res = SetupHostname();
-	if (!res)
-	{
-		return Result<bool> {
-			false,
-			new Error(MOCKER_NAMESPACE_ERROR_SETUP_HOSTNAME,
-						 "Failed to setup hostname"),
 		};
 	}
 
@@ -177,6 +177,16 @@ Result<bool>
 Namespace::SetupMounting() const
 {
 	Result<int> res { false };
+
+	// Define the new root path
+	res = Syscall::MOUNT("none", "/", nullptr, MS_REC | MS_PRIVATE, nullptr);
+	if (!res)
+	{
+		return Result<bool> {
+			false,
+			new Error(MOUNT_FAILED, "mount MS_PRIVATE on / has failed"),
+		};
+	}
 
 	// Define the new root path
 	res = Syscall::MOUNT(m_Config.mountPoint.c_str(),
