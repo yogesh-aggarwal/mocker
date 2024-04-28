@@ -1,0 +1,75 @@
+---
+AccessModifierOffset: "-3"
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Left
+AlignOperands: true
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: All
+AlwaysBreakAfterReturnType: All
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: "Yes"
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: None
+BraceWrapping:
+  AfterEnum: true
+  AfterUnion: true
+  AfterClass: true
+  BeforeElse: true
+  AfterStruct: true
+  BeforeCatch: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterControlStatement: true
+BreakBeforeBraces: Custom
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: true
+ColumnLimit: "100"
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+Cpp11BracedListStyle: false
+FixNamespaceComments: false
+IncludeBlocks: Regroup
+IndentCaseLabels: false
+IndentPPDirectives: AfterHash
+IndentWidth: "3"
+IndentWrappedFunctionNames: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+Language: Cpp
+NamespaceIndentation: All
+PointerAlignment: Right
+ReflowComments: true
+SortIncludes: false
+SortUsingDeclarations: false
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: "3"
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+TabWidth: "3"
+UseTab: ForContinuationAndIndentation
