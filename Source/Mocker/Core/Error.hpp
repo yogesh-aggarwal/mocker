@@ -50,6 +50,7 @@ public:
 	Error(ErrorCode code);
 	Error(ErrorCode code, ErrorMessage message);
 	Error(ErrorCode code, ErrorCode subCode, ErrorMessage message);
+	Error(ErrorCode code, ErrorCode subCode, const char *message);
 
 	ErrorCode
 	GetCode() const;

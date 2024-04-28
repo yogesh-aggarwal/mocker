@@ -10,8 +10,8 @@ namespace Syscall
 	Result<int>
 	MOUNT(const std::string &source,
 			const std::string &target,
-			const std::string &filesystemtype,
-			unsigned long      mountflags,
+			const char        *fsType,
+			unsigned long      mountFlags,
 			const void        *data);
 
 	Result<int>

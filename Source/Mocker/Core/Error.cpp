@@ -23,6 +23,13 @@ Error::Error(ErrorCode code, ErrorCode subCode, ErrorMessage message)
 
 //-----------------------------------------------------------------------------
 
+Error::Error(ErrorCode code, ErrorCode subCode, const char *message)
+	 : m_Code(code), m_SubCode(subCode), m_Message(message)
+{
+}
+
+//-----------------------------------------------------------------------------
+
 ErrorCode
 Error::GetCode() const
 {

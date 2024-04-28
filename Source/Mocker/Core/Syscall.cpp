@@ -35,15 +35,11 @@ Syscall::MKDIR(const std::string &path, mode_t mode)
 Result<int>
 Syscall::MOUNT(const std::string &source,
 					const std::string &target,
-					const std::string &filesystemtype,
-					unsigned long      mountflags,
+					const char        *fsType,
+					unsigned long      mountFlags,
 					const void        *data)
 {
-	int ret = mount(source.c_str(),
-						 target.c_str(),
-						 filesystemtype.c_str(),
-						 mountflags,
-						 data);
+	int ret = mount(source.c_str(), target.c_str(), fsType, mountFlags, data);
 	if (ret == -1)
 	{
 		return Result<int> { -1, new Error(ErrorCode::Unknown) };
