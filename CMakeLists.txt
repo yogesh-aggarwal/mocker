@@ -71,7 +71,7 @@ endif()
 
 message("[(---- Linking Libraries ----)]")
 # LINK_LIBRARY("openssl" crypto)
-# LINK_LIBRARY("spdlog" spdlog::spdlog)
+LINK_LIBRARY("fmt" fmt::fmt)
 message("[(---- Done Linking Libraries ----)]\n")
 
 # ----------------------------------------------------------------------------------------------------------------------
