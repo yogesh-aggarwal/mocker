@@ -52,6 +52,27 @@
 		"streambuf": "cpp",
 		"typeinfo": "cpp",
 		"cstring": "cpp",
-		"source_location": "cpp"
+		"source_location": "cpp",
+		"cinttypes": "cpp",
+		"any": "cpp",
+		"bitset": "cpp",
+		"chrono": "cpp",
+		"codecvt": "cpp",
+		"complex": "cpp",
+		"condition_variable": "cpp",
+		"ctime": "cpp",
+		"list": "cpp",
+		"optional": "cpp",
+		"ratio": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"mutex": "cpp",
+		"ranges": "cpp",
+		"semaphore": "cpp",
+		"sstream": "cpp",
+		"stop_token": "cpp",
+		"thread": "cpp",
+		"typeindex": "cpp",
+		"variant": "cpp"
 	}
 }
