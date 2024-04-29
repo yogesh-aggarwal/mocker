@@ -9,18 +9,28 @@
 template<typename T>
 struct Result
 {
-   T      value;
-   Error *error;
+   T          value;
+   Ref<Error> error;
 
+public:
    Result(T value) : value(value), error(nullptr) {}
-   Result(T value, Error *error) : value(value), error(error) {}
+   Result(T value, Error *error) : value(value), error(Ref<Error>(error)) {}
+   Result(T value, Ref<Error> error) : value(value), error(error) {}
 
    Result(const Result<T> &other) : value(other.value), error(other.error) {}
-   Result(Result<T> &&other) = delete;
+   Result(Result<T> &&other) : value(std::move(other.value)), error(other.error)
+   {
+   }
 
    ~Result() = default;
 
-   operator bool() const { return error == nullptr || !*error; }
+   operator bool() const
+   {
+      if (error != nullptr) return false;
+      if (!!error) return false;
+
+      return true;
+   }
 
    T *
    operator->() const
@@ -37,7 +47,7 @@ struct Result
    }
 
    const Result<T> &
-   WithErrorHandler(std::function<void(Error *)> handler)
+   WithErrorHandler(std::function<void(Ref<Error>)> handler)
    {
       if (error) handler(error);
 
