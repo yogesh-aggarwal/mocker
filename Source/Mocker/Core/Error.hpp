@@ -9,7 +9,10 @@ enum ErrorCode
    Undefined = -1,
    Unknown   = 0x0,
 
-   FILE_IO = EIO,
+   FILE_IO        = EIO,
+   FILE_NOT_FOUND = ENOENT,
+
+   OPERATION_NOT_PERMITTED = EPERM,
 
    MKDIR_FAILED  = EACCES,
    MKDIR_EXISTED = EEXIST,
@@ -39,20 +42,18 @@ enum ErrorCode
    MOCKER_NAMESPACE_INVALID_CONFIGURATION  = 0x15,
 };
 
-using ErrorMessage = const char *;
-
 class ErrorUnit
 {
 private:
    ErrorCode            m_Code;
-   ErrorMessage         m_Message;
+   std::string          m_Message;
    std::source_location m_Location;
 
 public:
    ErrorUnit(ErrorCode            code,
              std::source_location location = std::source_location::current());
    ErrorUnit(ErrorCode            code,
-             ErrorMessage         message,
+             std::string          message,
              std::source_location location = std::source_location::current());
 
    ErrorCode
@@ -92,7 +93,7 @@ public:
    Last() const;
 
    void
-   Print() const;
+   Print(const std::string &title = "") const;
 
    void
    Raise() const;
