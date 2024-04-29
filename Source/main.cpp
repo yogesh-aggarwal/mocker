@@ -1,12 +1,12 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <sched.h>         // For unshare and namespace flags
-#include <sys/mount.h>     // For mount
-#include <string>          // For strlen
-#include <vector>          // For vector
-#include <sys/syscall.h>   // For fopen, fwrite, fclose
-#include <sys/stat.h>      // For fopen, fwrite, fclose
+#include <sched.h>
+#include <sys/mount.h>
+#include <string>
+#include <vector>
+#include <sys/syscall.h>
+#include <sys/stat.h>
 
 #include <Mocker/Namespace.hpp>
 
@@ -21,8 +21,7 @@ child_function(void *arg)
    auto res = ns.Init();
    if (!res)
    {
-      res.error->Print();
-      // std::cerr << res.error->GetMessage() << std::endl;
+      res.error->Print("Namespace initialization failed");
       return 1;
    }
 
