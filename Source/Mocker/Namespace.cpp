@@ -265,50 +265,48 @@ Namespace::MountVirtualFileSystem() const
    });
    if (!res) return { false, res.error };
 
-   res = Syscall::MOUNT("proc", "/proc", "proc", 0, NULL)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "Failed to mount /proc" });
-             });
+   res =
+       Syscall::MOUNT("proc", "/proc", "proc", 0, NULL)
+           .WithErrorHandler([](auto error) {
+              if (error->Last().GetCode() == ErrorCode::OPERATION_NOT_PERMITTED)
+              {
+                 error->Clear();
+                 return;
+              }
+              error->Push({ MOUNT_FAILED, "Failed to mount /proc" });
+           });
    if (!res) return { false, res.error };
 
    // ------------------------------------------------------------------------
    // Mount /sys
    // ------------------------------------------------------------------------
 
-   res = Syscall::MOUNT("sysfs", "/sys", "sysfs", 0, NULL)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "Failed to mount /sys" });
-             });
+   res =
+       Syscall::MOUNT("sysfs", "/sys", "sysfs", 0, NULL)
+           .WithErrorHandler([](auto error) {
+              if (error->Last().GetCode() == ErrorCode::OPERATION_NOT_PERMITTED)
+              {
+                 error->Clear();
+                 return;
+              }
+              error->Push({ MOUNT_FAILED, "Failed to mount /sys" });
+           });
    if (!res) return { false, res.error };
 
    // ------------------------------------------------------------------------
    // Mount /dev
    // ------------------------------------------------------------------------
 
-   res = Syscall::MOUNT("udev", "/dev", "devtmpfs", 0, NULL)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "Failed to mount /dev" });
-             });
-   if (!res) return { false, res.error };
-
-   // ------------------------------------------------------------------------
-   // Mount /dev/pts
-   // ------------------------------------------------------------------------
-
-   res = Syscall::MOUNT("devpts", "/dev/pts", "devpts", 0, NULL)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "Failed to mount /dev/pts" });
-             });
-   if (!res) return { false, res.error };
-
-   // ------------------------------------------------------------------------
-   // Mount /dev/shm
-   // ------------------------------------------------------------------------
-
-   res = Syscall::MOUNT("tmpfs", "/dev/shm", "tmpfs", 0, NULL)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "Failed to mount /dev/shm" });
-             });
+   res =
+       Syscall::MOUNT("udev", "/dev", "devtmpfs", 0, NULL)
+           .WithErrorHandler([](auto error) {
+              if (error->Last().GetCode() == ErrorCode::OPERATION_NOT_PERMITTED)
+              {
+                 error->Clear();
+                 return;
+              }
+              error->Push({ MOUNT_FAILED, "Failed to mount /dev" });
+           });
    if (!res) return { false, res.error };
 
    // ------------------------------------------------------------------------
