@@ -1,66 +1,99 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <source_location>
 
 enum ErrorCode
 {
-	Undefined = -1,
-	Unknown   = 0x0,
+   Undefined = -1,
+   Unknown   = 0x0,
 
-	FILE_IO = EIO,
+   FILE_IO = EIO,
 
-	MKDIR_FAILED  = EACCES,
-	MKDIR_EXISTED = EEXIST,
+   MKDIR_FAILED  = EACCES,
+   MKDIR_EXISTED = EEXIST,
 
-	MOUNT_FAILED      = EACCES,
-	MOUNT_BIND_FAILED = EACCES,
+   MOUNT_FAILED      = EACCES,
+   MOUNT_BIND_FAILED = EACCES,
 
-	CHDIR_FAILED = EACCES,
+   CHDIR_FAILED = EACCES,
 
-	PIVOT_ROOT_FAILED = EACCES,
+   PIVOT_ROOT_FAILED = EACCES,
 
-	UMOUNT2_FAILED = EACCES,
+   UMOUNT2_FAILED = EACCES,
 
-	RMDIR_FAILED = EACCES,
+   RMDIR_FAILED = EACCES,
 
-	DUP2_FAILED = EACCES,
+   DUP2_FAILED = EACCES,
 
-	SETHOSTNAME_FAILED = EACCES,
+   SETHOSTNAME_FAILED = EACCES,
 
-	// Mocker's namespace errors start from 0x1*
+   // Mocker's namespace errors start from 0x1*
 
-	MOCKER_NAMESPACE_ERROR_UNKNOWN          = 0x10,
-	MOCKER_NAMESPACE_ERROR_SETUP_LOGGING_IO = 0x11,
-	MOCKER_NAMESPACE_ERROR_SETUP_MOUNT      = 0x12,
-	MOCKER_NAMESPACE_ERROR_SETUP_USER       = 0x13,
-	MOCKER_NAMESPACE_ERROR_SETUP_HOSTNAME   = 0x14,
-	MOCKER_NAMESPACE_INVALID_CONFIGURATION  = 0x15,
+   MOCKER_NAMESPACE_ERROR_UNKNOWN          = 0x10,
+   MOCKER_NAMESPACE_ERROR_SETUP_LOGGING_IO = 0x11,
+   MOCKER_NAMESPACE_ERROR_SETUP_MOUNT      = 0x12,
+   MOCKER_NAMESPACE_ERROR_SETUP_USER       = 0x13,
+   MOCKER_NAMESPACE_ERROR_SETUP_HOSTNAME   = 0x14,
+   MOCKER_NAMESPACE_INVALID_CONFIGURATION  = 0x15,
 };
 
-using ErrorMessage = const std::string &;
+using ErrorMessage = const char *;
+
+class ErrorUnit
+{
+private:
+   ErrorCode            m_Code;
+   ErrorMessage         m_Message;
+   std::source_location m_Location;
+
+public:
+   ErrorUnit(ErrorCode            code,
+             std::source_location location = std::source_location::current());
+   ErrorUnit(ErrorCode            code,
+             ErrorMessage         message,
+             std::source_location location = std::source_location::current());
+
+   ErrorCode
+   GetCode() const;
+
+   std::string
+   GetMessage() const;
+
+   const std::source_location &
+   GetLocation() const;
+
+   operator std::string() const;
+};
 
 class Error
 {
 private:
-	const ErrorCode m_Code;
-	const ErrorCode m_SubCode;
-	ErrorMessage    m_Message;
+   std::vector<ErrorUnit> m_Errors;
 
 public:
-	Error(ErrorCode code);
+   Error();
+   Error(const ErrorUnit &unit);
+   Error(const std::vector<ErrorUnit> &errors);
 
-	Error(ErrorCode code, ErrorMessage message);
-	Error(ErrorCode code, const char *message);
+   void
+   Push(const ErrorUnit &unit);
 
-	Error(ErrorCode code, ErrorCode subCode, ErrorMessage message);
-	Error(ErrorCode code, ErrorCode subCode, const char *message);
+   void
+   Clear();
 
-	ErrorCode
-	GetCode() const;
+   operator bool() const;
 
-	ErrorMessage
-	GetMessage() const;
+   const ErrorUnit &
+   First() const;
 
-	void
-	Raise() const;
+   const ErrorUnit &
+   Last() const;
+
+   void
+   Print() const;
+
+   void
+   Raise() const;
 };
