@@ -26,8 +26,8 @@ public:
 
    operator bool() const
    {
-      if (error != nullptr) return false;
-      if (!!error) return false;
+      if (error == nullptr) return true;
+      if (!!*error) return false;
 
       return true;
    }
