@@ -13,8 +13,9 @@ enum ErrorCode
 
    /* Syscalls Error Codes */
 
-   FILE_IO        = EIO,
-   FILE_NOT_FOUND = ENOENT,
+   FILE_IO             = EIO,
+   FILE_NOT_FOUND      = ENOENT,
+   FILE_ALREADY_EXISTS = EEXIST,
 
    OPERATION_NOT_PERMITTED = EPERM,
 
