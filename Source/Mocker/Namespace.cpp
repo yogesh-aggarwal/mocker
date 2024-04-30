@@ -172,6 +172,13 @@ Namespace::SetupMounting() const
    Result<int> res { false };
 
    // Define the new root path
+   res = Syscall::MOUNT("none", "/", NULL, MS_REC | MS_PRIVATE, NULL)
+             .WithErrorHandler([](auto error) {
+                error->Push({ MOUNT_FAILED, "chroot has failed" });
+             });
+   if (!res) return { false, res.error };
+   
+   // Define the new root path
    res = Syscall::CHROOT(m_Config.mountPoint.c_str())
              .WithErrorHandler([](auto error) {
                 error->Push({ MOUNT_FAILED, "chroot has failed" });
