@@ -43,8 +43,9 @@ enum ErrorCode
 
    // Mocker's container errors start from 0x2*
 
-   MOCKER_CONTAINER_ERROR_STACK_ALLOC = 0x20,
-   MOCKER_CONTAINER_ERROR_CLONE       = 0x21,
+   MOCKER_CONTAINER_ERROR_STACK_ALLOC  = 0x20,
+   MOCKER_CONTAINER_ERROR_CLONE        = 0x21,
+   MOCKER_CONTAINER_ERROR_CONFIG_PARSE = 0x22,
 };
 
 class ErrorUnit

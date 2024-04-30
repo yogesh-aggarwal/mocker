@@ -23,6 +23,9 @@ public:
    Container(const Config &config, const Namespace &ns);
    Container(const Config &config, Ref<Namespace> ns);
 
+   static Result<Ref<Container>>
+   FromConfigFile(const std::string &path);
+
    void
    SetAlias(const std::string &alias);
 

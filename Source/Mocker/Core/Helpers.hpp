@@ -8,6 +8,7 @@
 #include <cassert>
 #include <memory>
 #include <tuple>
+#include <future>
 
 //-----------------------------------------------------------------------------
 
@@ -68,6 +69,13 @@ CreatePair(T1 v1, T2 v2)
 {
    return std::make_pair<T1, T2>(v1, v2);
 }
+
+//-----------------------------------------------------------------------------
+// Async Short-hand notation
+//-----------------------------------------------------------------------------
+
+template<typename T>
+using Async = std::future<T>;
 
 //-----------------------------------------------------------------------------
 // English-like, more-understandable type names.

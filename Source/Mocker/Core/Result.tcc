@@ -55,3 +55,6 @@ public:
       return *this;
    }
 };
+
+template<typename T>
+using AsyncResult = Result<T>;

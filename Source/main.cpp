@@ -6,19 +6,17 @@
 int
 main()
 {
-   Container container {
-      Container::Config {
-          .alias = "ubuntu",
-      },
-      Namespace { Namespace::Config {
-          .mountPoint = "/home/yogesh/Desktop/ubuntu",
-          .hostname   = "mocker",
-      } },
-   };
+   Result<Ref<Container>> res { nullptr };
 
-   auto res = container.Run();
+   res = Container::FromConfigFile("./containers/1.yml");
+   if (!res)
+   {
+      res.error->Print();
+      return 1;
+   }
+   auto c1 = res.value;
 
-   std::cout << container.GetAlias() << std::endl;
+   auto _ = c1->Run();
 
    wait(nullptr);
 
