@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include <Mocker/Context/Context.hpp>
 #include <Mocker/Namespace.hpp>
 #include <Mocker/Image.hpp>
 
@@ -15,16 +16,17 @@ public:
    };
 
 private:
+   Ref<Context>   m_Context;
    Config         m_Config;
    Ref<Namespace> m_Namespace;
 
 public:
-   Container(const Config &config);
-   Container(const Config &config, const Namespace &ns);
-   Container(const Config &config, Ref<Namespace> ns);
+   Container(Ref<Context> context, const Config &config);
+   Container(Ref<Context> context, const Config &config, const Namespace &ns);
+   Container(Ref<Context> context, const Config &config, Ref<Namespace> ns);
 
-   static Result<Ref<Container>>
-   FromConfigFile(const std::string &path);
+   // static Result<Ref<Container>>
+   // FromConfigFile(const std::string &path);
 
    void
    SetAlias(const std::string &alias);

@@ -5,7 +5,8 @@
 
 //-----------------------------------------------------------------------------
 
-Container::Container(const Config &config) : m_Config(config)
+Container::Container(Ref<Context> context, const Config &config)
+    : m_Context(context), m_Config(config)
 {
    m_Namespace = CreateRef<Namespace>(Namespace::Config {
        .mountPoint = "/home/yogesh/Desktop/ubuntu",
@@ -15,50 +16,55 @@ Container::Container(const Config &config) : m_Config(config)
 
 //-----------------------------------------------------------------------------
 
-Container::Container(const Config &config, const Namespace &ns)
-    : m_Config(config), m_Namespace(CreateRef<Namespace>(ns))
+Container::Container(Ref<Context>     context,
+                     const Config    &config,
+                     const Namespace &ns)
+    : m_Context(context), m_Config(config),
+      m_Namespace(CreateRef<Namespace>(ns))
 {
 }
 
 //-----------------------------------------------------------------------------
 
-Container::Container(const Config &config, Ref<Namespace> ns)
-    : m_Config(config), m_Namespace(ns)
+Container::Container(Ref<Context>   context,
+                     const Config  &config,
+                     Ref<Namespace> ns)
+    : m_Context(context), m_Config(config), m_Namespace(ns)
 {
 }
 
 //-----------------------------------------------------------------------------
 
-Result<Ref<Container>>
-Container::FromConfigFile(const std::string &path)
-{
-   try
-   {
-      YAML::Node config = YAML::LoadFile(path);
+// Result<Ref<Container>>
+// Container::FromConfigFile(const std::string &path)
+// {
+//    try
+//    {
+//       YAML::Node config = YAML::LoadFile(path);
 
-      if (!config["alias"] || !config["image"])
-      {
-         return Result<Ref<Container>> {
-            nullptr,
-            new Error { { MOCKER_CONTAINER_ERROR_CONFIG_PARSE,
-                          "Invalid container configuration file" } }
-         };
-      }
+//       if (!config["alias"] || !config["image"])
+//       {
+//          return Result<Ref<Container>> {
+//             nullptr,
+//             new Error { { MOCKER_CONTAINER_ERROR_CONFIG_PARSE,
+//                           "Invalid container configuration file" } }
+//          };
+//       }
 
-      return Result<Ref<Container>> {
-         CreateRef<Container>(Container::Config {
-             .alias = config["alias"].as<std::string>(),
-         }),
-      };
-   }
-   catch (std::exception e)
-   {
-      return Result<Ref<Container>> {
-         nullptr,
-         new Error { { MOCKER_CONTAINER_ERROR_CONFIG_PARSE, e.what() } }
-      };
-   }
-}
+//       return Result<Ref<Container>> {
+//          CreateRef<Container>(Container::Config {
+//              .alias = config["alias"].as<std::string>(),
+//          }),
+//       };
+//    }
+//    catch (std::exception e)
+//    {
+//       return Result<Ref<Container>> {
+//          nullptr,
+//          new Error { { MOCKER_CONTAINER_ERROR_CONFIG_PARSE, e.what() } }
+//       };
+//    }
+// }
 
 //-----------------------------------------------------------------------------
 
