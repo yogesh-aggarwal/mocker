@@ -1,12 +1,13 @@
 #include "Container.hpp"
 
 #include <sys/wait.h>
+#include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
 
 //-----------------------------------------------------------------------------
 
 Container::Container(Ref<Context> context, const Config &config)
-    : m_Context(context), m_Config(config)
+    : m_PID(-1), m_Context(context), m_Config(config)
 {
    m_Namespace = CreateRef<Namespace>(Namespace::Config {
        .mountPoint = "/home/yogesh/Desktop/ubuntu",
@@ -19,7 +20,7 @@ Container::Container(Ref<Context> context, const Config &config)
 Container::Container(Ref<Context>     context,
                      const Config    &config,
                      const Namespace &ns)
-    : m_Context(context), m_Config(config),
+    : m_PID(-1), m_Context(context), m_Config(config),
       m_Namespace(CreateRef<Namespace>(ns))
 {
 }
@@ -29,7 +30,7 @@ Container::Container(Ref<Context>     context,
 Container::Container(Ref<Context>   context,
                      const Config  &config,
                      Ref<Namespace> ns)
-    : m_Context(context), m_Config(config), m_Namespace(ns)
+    : m_PID(-1), m_Context(context), m_Config(config), m_Namespace(ns)
 {
 }
 
@@ -92,9 +93,51 @@ Container::GetNamespace() const
 
 //-----------------------------------------------------------------------------
 
-Result<bool>
-Container::Run() const
+bool
+Container::IsRunning() const
 {
+   return m_PID != -1;
+}
+
+//-----------------------------------------------------------------------------
+
+Result<bool>
+Container::Terminate()
+{
+   if (m_PID == -1)
+      return Result<bool> { false,
+                            new Error(
+                                { MOCKER_CONTAINER_TERMINATE_ERROR_NOT_RUNNING,
+                                  "Container is not running" }) };
+
+   if (kill(m_PID, SIGKILL) == -1)
+      return Result<bool> { false,
+                            new Error(
+                                { MOCKER_CONTAINER_TERMINATE_ERROR_FAILED,
+                                  "Failed to terminate the container" }) };
+
+   int status;
+   waitpid(m_PID, &status, 0);
+
+   m_PID = -1;
+
+   return { true };
+}
+
+//-----------------------------------------------------------------------------
+
+Result<bool>
+Container::Run()
+{
+   if (m_PID != -1)
+   {
+      const std::string message =
+          fmt::format("Container '{}' is already running", m_Config.alias);
+      return Result<bool> { false,
+                            new Error({ MOCKER_CONTAINER_ERROR_ALREADY_RUNNING,
+                                        message }) };
+   }
+
    Result<bool> res { false };
 
    size_t stackSize = 1024 * 1024;   // 1 MB
@@ -123,6 +166,10 @@ Container::Run() const
                             new Error { { MOCKER_CONTAINER_ERROR_CLONE,
                                           "Failed to clone a new process" } } };
    }
+
+   m_PID = result;
+
+   printf("Container is running with PID: %d...\n", result);
 
    return res;
 }

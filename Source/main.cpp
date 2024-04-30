@@ -17,8 +17,6 @@ main()
       return EXIT_FAILURE;
    }
 
-   return EXIT_SUCCESS;
-
    //--------------------------------------------------------------------------
 
    Ref<Image> image = CreateRef<Image>(ctx->GetFSContext(),
@@ -29,8 +27,6 @@ main()
 
    auto _ = image->Pull(IMAGE_SERVER);
 
-   return EXIT_SUCCESS;
-
    Ref<Container> c = CreateRef<Container>(ctx,
                                            Container::Config {
                                                .alias = "ping-ping-ping",
@@ -38,6 +34,29 @@ main()
                                            });
 
    _ = c->Run();
+   if (!_)
+   {
+      _.error->Print();
+      return EXIT_FAILURE;
+   }
+
+   _ = c->Run();
+   if (!_)
+   {
+      _.error->Print();
+      return EXIT_FAILURE;
+   }
+
+   sleep(5);
+
+   auto termRes = c->Terminate();
+   if (!termRes)
+   {
+      termRes.error->Print();
+      return EXIT_FAILURE;
+   }
+
+   printf("Container stopped.\n");
 
    wait(nullptr);
 

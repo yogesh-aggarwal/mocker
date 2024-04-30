@@ -16,6 +16,7 @@ public:
    };
 
 private:
+   pid_t          m_PID;
    Ref<Context>   m_Context;
    Config         m_Config;
    Ref<Namespace> m_Namespace;
@@ -38,7 +39,13 @@ public:
    GetNamespace() const;
 
    Result<bool>
-   Run() const;
+   Run();
+
+   Result<bool>
+   Terminate();
+
+   bool
+   IsRunning() const;
 
    void
    Execute(const std::string              &command,
