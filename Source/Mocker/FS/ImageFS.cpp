@@ -1,5 +1,7 @@
 #include "ImageFS.hpp"
 
+#include <filesystem>
+
 #include <Mocker/Core/Syscall.hpp>
 
 ImageFS::ImageFS(const std::string &basePath) : basePath(basePath) {}
@@ -38,9 +40,42 @@ ImageFS::Init() const
                 }
 
                 error->Push({ ErrorCode::MKDIR_FAILED,
-                              "Failed to create image directory for mocker " +
+                              "Failed to create directory for mocker images: " +
                                   GetPath() });
              });
+   if (!res) return { false, res.error };
+
+   return { true };
+}
+
+Result<bool>
+ImageFS::DecompressToPath(const std::string &file,
+                          const std::string &dest) const
+{
+   Result<int> res { false };
+
+   /* Check existence of source path. If it already exists then won't be able to
+    * do anything as files are not available */
+   try
+   {
+      bool isAlreadyExists = std::filesystem::exists(file);
+      if (!isAlreadyExists)
+      {
+         const std::string message = "File not found: " + file;
+         return Result<bool> { false, new Error({ FILE_IO, message }) };
+      }
+   }
+   catch (const std::filesystem::filesystem_error &e)
+   {
+      const std::string message =
+          "Error while checking files' existence: " + file;
+      return Result<bool> { false, new Error({ FILE_IO, message }) };
+   }
+
+   res = Syscall::MKDIR(dest, 0755).WithErrorHandler([dest](Ref<Error> error) {
+      error->Push({ ErrorCode::MKDIR_FAILED,
+                    "Failed to create directory for image: " + dest });
+   });
    if (!res) return { false, res.error };
 
    return { true };

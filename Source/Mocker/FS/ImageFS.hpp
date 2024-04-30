@@ -17,4 +17,7 @@ public:
 
    Result<bool>
    Init() const;
+
+   Result<bool>
+   DecompressToPath(const std::string &file, const std::string &dest) const;
 };

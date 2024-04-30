@@ -1,6 +1,7 @@
 #include "Image.hpp"
 
 #include <iostream>
+#include <filesystem>
 
 //-----------------------------------------------------------------------------
 
@@ -57,15 +58,36 @@ Image::Pull(const std::string &repository) const
    const std::string imageURL    = repository + "/" + m_Config.path;
    const std::string metadataURL = imageURL + "/metadata.json";
 
-   std::printf("Fetching %s as \"%s\" from %s\n",
+   std::printf("Fetching %s as \"%s\" from %s%s\n",
                m_Config.path.c_str(),
                m_Config.alias.c_str(),
-               imageURL.c_str());
+               imageURL.c_str(),
+               ".tar.gz");
 
-   // copy folder from /home/yogesh/Desktop/mocker_images/alpine:latest to
-   // /tmp/mocker/images/alpine:latest
+   std::filesystem::path srcPath { "/home/yogesh/Desktop/mocker_images/" +
+                                   m_Config.path + ".tar.gz" };
+   std::filesystem::path destPath { m_FSContext->GetImageFS()->GetPath() + "/" +
+                                    m_Config.path };
 
-   return Result<bool> { true };
+   /* Check existence of destination path. If it already exists then we don't
+    * need to do anything */
+   try
+   {
+      bool isAlreadyExists = std::filesystem::exists(destPath);
+      if (isAlreadyExists) return Result<bool> { true };
+   }
+   catch (const std::filesystem::filesystem_error &e)
+   {
+      return Result<bool> {
+         false,
+         new Error({ FILE_IO, "Error while checking image files' existence" })
+      };
+   }
+
+   /* Extract Image contents to destination dir */
+   auto res = m_FSContext->GetImageFS()->DecompressToPath(srcPath.string(),
+                                                          destPath.string());
+   return res;
 }
 
 //-----------------------------------------------------------------------------
