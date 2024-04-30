@@ -45,11 +45,11 @@ Namespace::Init() const
    });
    if (!res) return { false, res.error };
 
-   res = SetupUser().WithErrorHandler([](auto error) {
-      error->Push(
-          { MOCKER_NAMESPACE_ERROR_SETUP_USER, "Failed to setup user" });
-   });
-   if (!res) return { false, res.error };
+   // res = SetupUser().WithErrorHandler([](auto error) {
+   //    error->Push(
+   //        { MOCKER_NAMESPACE_ERROR_SETUP_USER, "Failed to setup user" });
+   // });
+   // if (!res) return { false, res.error };
 
    auto mountRes = SetupMounting().WithErrorHandler([](auto error) {
       error->Push(
@@ -172,68 +172,16 @@ Namespace::SetupMounting() const
    Result<int> res { false };
 
    // Define the new root path
-   res =
-       Syscall::MOUNT("none", "/", nullptr, MS_REC | MS_PRIVATE, nullptr)
-           .WithErrorHandler([](auto error) {
-              error->Push({ MOUNT_FAILED, "mount MS_PRIVATE on / has failed" });
-           });
+   res = Syscall::CHROOT(m_Config.mountPoint.c_str())
+             .WithErrorHandler([](auto error) {
+                error->Push({ MOUNT_FAILED, "chroot has failed" });
+             });
    if (!res) return { false, res.error };
 
    // Define the new root path
-   res = Syscall::MOUNT(m_Config.mountPoint.c_str(),
-                        m_Config.mountPoint.c_str(),
-                        nullptr,
-                        MS_BIND | MS_REC | MS_PRIVATE,
-                        nullptr)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "mount MS_BIND on / has failed" });
-             });
-   if (!res) return { false, res.error };
-
-   // Change the working directory to the new root
-   res = Syscall::CHDIR(m_Config.mountPoint.c_str())
-             .WithErrorHandler([](auto error) {
-                error->Push({ CHDIR_FAILED, "Failed to change directory" });
-             });
-   if (!res) return { false, res.error };
-
-   // Perform pivot_root to change the root filesystem
-   res = Syscall::MKDIR(m_Config.oldRootDir.c_str(), 0755)
-             .WithErrorHandler([](auto error) {
-                if (error->Last().GetCode() == ErrorCode::MKDIR_EXISTED)
-                {
-                   error->Clear();
-                   return;
-                }
-                error->Push(
-                    { MKDIR_FAILED, "Failed to create old root directory" });
-             });
-   if (!res) return { false, res.error };
-
-   res = Syscall::PIVOT_ROOT(".", m_Config.oldRootDir.c_str())
-             .WithErrorHandler([](auto error) {
-                error->Push({ PIVOT_ROOT_FAILED, "Failed to pivot root" });
-             });
-   if (!res) return { false, res.error };
-
-   // Change the working directory to the new root
    res = Syscall::CHDIR("/").WithErrorHandler([](auto error) {
-      error->Push({ CHDIR_FAILED, "Failed to change directory" });
+      error->Push({ MOUNT_FAILED, "chdir to / has failed" });
    });
-   if (!res) return { false, res.error };
-
-   // Unmount the old root
-   res = Syscall::UMOUNT2(m_Config.oldRootDir.c_str(), MNT_DETACH)
-             .WithErrorHandler([](auto error) {
-                error->Push({ UMOUNT2_FAILED, "Failed to unmount old root" });
-             });
-   if (!res) return { false, res.error };
-
-   // Remove the old root
-   res = Syscall::RMDIR(m_Config.oldRootDir.c_str())
-             .WithErrorHandler([](auto error) {
-                error->Push({ RMDIR_FAILED, "Failed to remove old root" });
-             });
    if (!res) return { false, res.error };
 
    auto mountRes = MountVirtualFileSystem().WithErrorHandler([](auto error) {
@@ -265,49 +213,28 @@ Namespace::MountVirtualFileSystem() const
    });
    if (!res) return { false, res.error };
 
-   res =
-       Syscall::MOUNT("proc", "/proc", "proc", 0, NULL)
-           .WithErrorHandler([](auto error) {
-              if (error->Last().GetCode() == ErrorCode::OPERATION_NOT_PERMITTED)
-              {
-                 error->Clear();
-                 return;
-              }
-              error->Push({ MOUNT_FAILED, "Failed to mount /proc" });
-           });
-   if (!res) return { false, res.error };
+   const std::vector<std::tuple<const char *, const char *, const char *>>
+       mounts = {
+          { "proc", "/proc", "proc" },
+          //  { "sys", "/sys", "sysfs" },
+          //  { "devpts", "/dev/pts", "devpts" },
+          //  { "tmpfs", "/run", "tmpfs" },
+       };
 
-   // ------------------------------------------------------------------------
-   // Mount /sys
-   // ------------------------------------------------------------------------
-
-   res =
-       Syscall::MOUNT("sysfs", "/sys", "sysfs", 0, NULL)
-           .WithErrorHandler([](auto error) {
-              if (error->Last().GetCode() == ErrorCode::OPERATION_NOT_PERMITTED)
-              {
-                 error->Clear();
-                 return;
-              }
-              error->Push({ MOUNT_FAILED, "Failed to mount /sys" });
-           });
-   if (!res) return { false, res.error };
-
-   // ------------------------------------------------------------------------
-   // Mount /dev
-   // ------------------------------------------------------------------------
-
-   res =
-       Syscall::MOUNT("udev", "/dev", "devtmpfs", 0, NULL)
-           .WithErrorHandler([](auto error) {
-              if (error->Last().GetCode() == ErrorCode::OPERATION_NOT_PERMITTED)
-              {
-                 error->Clear();
-                 return;
-              }
-              error->Push({ MOUNT_FAILED, "Failed to mount /dev" });
-           });
-   if (!res) return { false, res.error };
+   for (const auto &[source, target, fsType] : mounts)
+   {
+      res = Syscall::MOUNT(source, target, fsType, 0, NULL)
+                .WithErrorHandler([](auto error) {
+                   if (error->Last().GetCode() ==
+                       ErrorCode::OPERATION_NOT_PERMITTED)
+                   {
+                      error->Clear();
+                      return;
+                   }
+                   error->Push({ MOUNT_FAILED, "Failed to mount /proc" });
+                });
+      if (!res) return { false, res.error };
+   }
 
    // ------------------------------------------------------------------------
 

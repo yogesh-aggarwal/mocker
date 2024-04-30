@@ -36,6 +36,22 @@ Syscall::MKDIR(const std::string &path, mode_t mode)
 //-----------------------------------------------------------------------------
 
 Result<int>
+Syscall::CHROOT(const std::string &source)
+{
+   int ret = chroot(source.c_str());
+   if (ret == -1)
+   {
+      const std::string message =
+          fmt::format("[syscall] Error while changing root to {}", source);
+      return Result<int> { -1, new Error({ ErrorCode::Unknown, message }) };
+   }
+
+   return Result<int> { ret };
+}
+
+//-----------------------------------------------------------------------------
+
+Result<int>
 Syscall::MOUNT(const std::string &source,
                const std::string &target,
                const char        *fsType,

@@ -10,11 +10,45 @@
 
 #include <Mocker/Namespace.hpp>
 
-int
-child_function(void *arg)
+char *
+allocateStack(size_t size)
 {
-   Namespace ns { Namespace::Config {
-       .mountPoint = "/home/yogesh/Desktop/rootfs",
+   char *stack = new char[size];
+   if (!stack)
+   {
+      std::cerr << "Failed to allocate stack memory" << std::endl;
+      exit(1);
+   }
+
+   return stack;
+}
+
+void
+runExecv(void *args)
+{
+   // Retrieve the command and arguments from the passed argument
+   auto *data =
+       reinterpret_cast<std::pair<std::string, std::vector<std::string>> *>(
+           args);
+   const std::string              &command       = data->first;
+   const std::vector<std::string> &secondaryArgs = data->second;
+
+   // Prepare the arguments for execv
+   const char *execArgs[1 + secondaryArgs.size() + 1] = { command.c_str() };
+   for (size_t i = 0; i < secondaryArgs.size(); i++)
+      execArgs[i + 1] = secondaryArgs[i].c_str();
+   execArgs[1 + secondaryArgs.size()] = nullptr;
+
+   // Execute the new program using execv
+   execv(command.c_str(), const_cast<char **>(execArgs));
+   perror("execv failed");   // If execv returns, there was an error
+}
+
+int
+child_function(void *args)
+{
+   Namespace ns { {
+       .mountPoint = "/home/yogesh/Desktop/ubuntu",
        .hostname   = "mocker",
    } };
 
@@ -25,22 +59,7 @@ child_function(void *arg)
       return 1;
    }
 
-   // Retrieve the command and arguments from the passed argument
-   auto *data =
-       reinterpret_cast<std::pair<std::string, std::vector<std::string>> *>(
-           arg);
-   const std::string              &command = data->first;
-   const std::vector<std::string> &args    = data->second;
-
-   // Prepare the arguments for execv
-   const char *execArgs[1 + args.size() + 1] = { command.c_str() };
-   for (size_t i = 0; i < args.size(); i++)
-      execArgs[i + 1] = args[i].c_str();
-   execArgs[1 + args.size()] = nullptr;
-
-   // Execute the new program using execv
-   execv(command.c_str(), const_cast<char **>(execArgs));
-   perror("execv failed");   // If execv returns, there was an error
+   runExecv(args);
 
    return 1;
 }
@@ -48,38 +67,28 @@ child_function(void *arg)
 int
 main()
 {
-   // Define flags for clone: specify namespaces and process options
-   int clone_flags = CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWPID |
-                     CLONE_NEWNET | CLONE_NEWUSER | SIGCHLD;
-
    // Allocate a stack for the child process
-   constexpr size_t stack_size = 8 * 1024 * 1024;   // 8 MB stack size
-   char            *stack      = new char[stack_size];
-   if (!stack)
-   {
-      std::cerr << "Failed to allocate stack memory" << std::endl;
-      return 1;
-   }
+   size_t stackSize = 1024 * 1024;   // 1 MB
+   char  *stack     = allocateStack(stackSize);
 
-   // Prepare command and arguments for the child process
-   std::string              command = "/bin/sh";
-   std::vector<std::string> args    = {};
-   auto                     arg     = std::make_pair(command, args);
+   auto args =
+       std::make_pair<std::string, std::vector<std::string>>("/bin/sh", {});
 
    // Clone a new process
-   int result = clone(child_function, stack + stack_size, clone_flags, &arg);
-
+   int result = clone(child_function,
+                      stack + stackSize,
+                      SIGCHLD | CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
+                          CLONE_NEWPID | CLONE_NEWNET,
+                      &args);
    if (result == -1)
    {
-      std::cerr << "Error while cloning" << std::endl;
-      delete[] stack;
-      return 1;
+      std::cerr << "Error while cloning: " << errno << std::endl;
+      goto cleanup;
    }
 
-   // Optionally, wait for the child process to complete
-   waitpid(result, nullptr, 0);
+   wait(nullptr);
 
-   // Free the allocated stack memory
+cleanup:
    delete[] stack;
 
    return 0;
