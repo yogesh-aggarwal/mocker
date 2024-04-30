@@ -2,6 +2,9 @@
 
 #include <string>
 
+#include <Mocker/Context/FSContext.hpp>
+#include <Mocker/Core/Result.tcc>
+
 class Image
 {
 public:
@@ -12,10 +15,11 @@ public:
    };
 
 private:
-   Config m_Config;
+   Ref<FSContext> m_FSContext;
+   Config         m_Config;
 
 public:
-   Image(const Config &config);
+   Image(Ref<FSContext> fsContext, const Config &config);
 
    void
    SetAlias(const std::string &alias);
@@ -28,4 +32,16 @@ public:
 
    const std::string &
    GetPath() const;
+
+   Result<bool>
+   CheckExists() const;
+
+   Result<bool>
+   Pull(const std::string &repository) const;
+
+   Result<bool>
+   Remove() const;
+
+   Result<bool>
+   Replicate(const std::string &destination) const;
 };
