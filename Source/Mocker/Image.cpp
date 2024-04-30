@@ -74,7 +74,11 @@ Image::Pull(const std::string &repository) const
    try
    {
       bool isAlreadyExists = std::filesystem::exists(destPath);
+#ifdef DEBUG
+      if (isAlreadyExists) { std::filesystem::remove_all(destPath); }
+#else
       if (isAlreadyExists) return Result<bool> { true };
+#endif
    }
    catch (const std::filesystem::filesystem_error &e)
    {
@@ -85,8 +89,12 @@ Image::Pull(const std::string &repository) const
    }
 
    /* Extract Image contents to destination dir */
-   auto res = m_FSContext->GetImageFS()->DecompressToPath(srcPath.string(),
-                                                          destPath.string());
+   auto res = m_FSContext->GetImageFS()
+                  ->PopulateImage(srcPath.string(), destPath.string())
+                  .WithErrorHandler([](Ref<Error> error) {
+                     error->Push({ MOCKER_IMAGE_ERROR_POPULATE_FAILED,
+                                   "Failed to extract image" });
+                  });
    return res;
 }
 

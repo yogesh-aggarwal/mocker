@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <Mocker/Core/Syscall.hpp>
+#include <Mocker/Utility/Archive.hpp>
 
 ImageFS::ImageFS(std::string basePath) : basePath(std::move(basePath)) {}
 
@@ -49,13 +50,12 @@ ImageFS::Init() const
 }
 
 Result<bool>
-ImageFS::DecompressToPath(const std::string &file,
-                          const std::string &dest) const
+ImageFS::PopulateImage(const std::string &file, const std::string &dest) const
 {
-   Result<int> res { false };
+   Result<bool> res { false };
 
-   /* Check existence of source path. If it already exists then won't be able to
-    * do anything as files are not available */
+   /* Check existence of source path. If it already exists then we won't be able
+    * to do anything as files are not available */
    try
    {
       bool isAlreadyExists = std::filesystem::exists(file);
@@ -72,10 +72,22 @@ ImageFS::DecompressToPath(const std::string &file,
       return Result<bool> { false, new Error({ FILE_IO, message }) };
    }
 
-   res = Syscall::MKDIR(dest, 0755).WithErrorHandler([dest](Ref<Error> error) {
-      error->Push({ ErrorCode::MKDIR_FAILED,
-                    "Failed to create directory for image: " + dest });
-   });
+   /* Create the destination folder */
+   auto destRes =
+       Syscall::MKDIR(dest, 0755).WithErrorHandler([dest](Ref<Error> error) {
+          error->Push({ ErrorCode::MKDIR_FAILED,
+                        "Failed to create directory for image: " + dest });
+       });
+   if (!destRes) return { false, destRes.error };
+
+   /* Extract the image */
+   Archive archive { file };
+   res =
+       archive.ExtractTo(dest).WithErrorHandler([file, dest](Ref<Error> error) {
+          const std::string message =
+              "Failed to extract image from " + file + " to " + dest;
+          error->Push({ MOCKER_ARCHIVE_EXTRACT_FAILED, message });
+       });
    if (!res) return { false, res.error };
 
    return { true };

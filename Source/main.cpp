@@ -8,6 +8,8 @@
 int
 main()
 {
+   system("clear");
+
    Ref<Context> ctx = CreateRef<Context>("/tmp/mocker");
 
    auto ctxRes = ctx->Init();
@@ -29,6 +31,8 @@ main()
       _.error->Print();
       return EXIT_FAILURE;
    }
+
+   return 0;
 
    Ref<Container> c = CreateRef<Container>(ctx,
                                            Container::Config {
