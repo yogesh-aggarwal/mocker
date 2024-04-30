@@ -71,6 +71,7 @@ endif()
 
 message("[(---- Linking Libraries ----)]")
 # LINK_LIBRARY("openssl" crypto)
+find_package(LibArchive REQUIRED)
 LINK_LIBRARY("fmt" fmt::fmt)
 LINK_LIBRARY("yaml-cpp" yaml-cpp::yaml-cpp)
 message("[(---- Done Linking Libraries ----)]\n")
