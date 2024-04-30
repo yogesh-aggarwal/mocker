@@ -30,7 +30,7 @@ public:
    // FromConfigFile(const std::string &path);
 
    void
-   SetAlias(const std::string &alias);
+   SetAlias(std::string alias);
 
    const std::string &
    GetAlias() const;

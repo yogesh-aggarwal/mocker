@@ -15,20 +15,20 @@ public:
    };
 
 private:
-   Ref<FSContext> m_FSContext;
    Config         m_Config;
+   Ref<FSContext> m_FSContext;
 
 public:
    Image(Ref<FSContext> fsContext, const Config &config);
 
    void
-   SetAlias(const std::string &alias);
+   SetAlias(std::string alias);
 
    const std::string &
    GetAlias() const;
 
    void
-   SetPath(const std::string &path);
+   SetPath(std::string path);
 
    const std::string &
    GetPath() const;

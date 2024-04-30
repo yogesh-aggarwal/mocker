@@ -70,7 +70,7 @@ Container::Container(Ref<Context>   context,
 //-----------------------------------------------------------------------------
 
 void
-Container::SetAlias(const std::string &alias)
+Container::SetAlias(std::string alias)
 {
    m_Config.alias = alias;
 }

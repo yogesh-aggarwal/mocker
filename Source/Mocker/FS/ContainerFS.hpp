@@ -10,7 +10,7 @@ class ContainerFS
    const std::string subPath = "containers";
 
 public:
-   ContainerFS(const std::string &basePath);
+   ContainerFS(std::string basePath);
 
    std::string
    GetPath() const;

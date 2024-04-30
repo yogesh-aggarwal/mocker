@@ -10,7 +10,7 @@ class ImageFS
    const std::string subPath = "images";
 
 public:
-   ImageFS(const std::string &basePath);
+   ImageFS(std::string basePath);
 
    std::string
    GetPath() const;

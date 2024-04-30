@@ -4,7 +4,7 @@
 
 #include <Mocker/Core/Syscall.hpp>
 
-ImageFS::ImageFS(const std::string &basePath) : basePath(basePath) {}
+ImageFS::ImageFS(std::string basePath) : basePath(std::move(basePath)) {}
 
 std::string
 ImageFS::GetPath() const

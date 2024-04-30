@@ -2,7 +2,9 @@
 
 #include <Mocker/Core/Syscall.hpp>
 
-ContainerFS::ContainerFS(const std::string &basePath) : basePath(basePath) {}
+ContainerFS::ContainerFS(std::string basePath) : basePath(std::move(basePath))
+{
+}
 
 std::string
 ContainerFS::GetPath() const

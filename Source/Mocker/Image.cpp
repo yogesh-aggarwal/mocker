@@ -13,7 +13,7 @@ Image::Image(Ref<FSContext> fsContext, const Config &config)
 //-----------------------------------------------------------------------------
 
 void
-Image::SetAlias(const std::string &alias)
+Image::SetAlias(std::string alias)
 {
    m_Config.alias = alias;
 }
@@ -29,7 +29,7 @@ Image::GetAlias() const
 //-----------------------------------------------------------------------------
 
 void
-Image::SetPath(const std::string &path)
+Image::SetPath(std::string path)
 {
    m_Config.path = path;
 }
