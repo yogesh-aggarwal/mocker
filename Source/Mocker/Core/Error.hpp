@@ -46,6 +46,14 @@ enum ErrorCode
    MOCKER_CONTAINER_ERROR_STACK_ALLOC  = 0x20,
    MOCKER_CONTAINER_ERROR_CLONE        = 0x21,
    MOCKER_CONTAINER_ERROR_CONFIG_PARSE = 0x22,
+
+   // Mocker's Context errors start from 0x3*
+   MOCKER_CONTEXT_INITIALIZE_FAILED            = 0x30,
+   MOCKER_FILESYSTEM_CONTEXT_INITIALIZE_FAILED = 0x31,
+
+   // Mocker's Filesystem errors start from 0x4*
+   MOCKER_IMAGE_FILESYSTEM_GENERIC           = 0x40,
+   MOCKER_IMAGE_FILESYSTEM_INITIALIZE_FAILED = 0x41,
 };
 
 class ErrorUnit
