@@ -3,25 +3,43 @@
 #include <string>
 
 #include <Mocker/Namespace.hpp>
+#include <Mocker/Image.hpp>
 
 class Container
 {
 public:
-	struct Config
-	{
-		std::string alias;
-	};
+   struct Config
+   {
+      std::string alias;
+      Ref<Image>  image;
+   };
 
 private:
-	Config    m_Config;
-	Namespace m_Namespace;
+   Config         m_Config;
+   Ref<Namespace> m_Namespace;
 
 public:
-	Container(const Config &config, const Namespace &ns);
+   Container(const Config &config);
+   Container(const Config &config, const Namespace &ns);
+   Container(const Config &config, Ref<Namespace> ns);
 
-	void
-	SetAlias(const std::string &alias);
+   void
+   SetAlias(const std::string &alias);
 
-	const std::string &
-	GetAlias() const;
+   const std::string &
+   GetAlias() const;
+
+   Ref<Namespace>
+   GetNamespace() const;
+
+   Result<bool>
+   Run() const;
+
+   void
+   Execute(const std::string              &command,
+           const std::vector<std::string> &args) const;
+
+private:
+   static int
+   ProceessFn(void *args);
 };

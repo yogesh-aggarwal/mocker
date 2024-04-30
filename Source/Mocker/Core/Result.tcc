@@ -7,8 +7,9 @@
 #include <Mocker/Core/Helpers.hpp>
 
 template<typename T>
-struct Result
+struct [[nodiscard]] Result
 {
+public:
    T          value;
    Ref<Error> error;
 

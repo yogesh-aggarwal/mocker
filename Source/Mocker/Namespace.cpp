@@ -45,11 +45,11 @@ Namespace::Init() const
    });
    if (!res) return { false, res.error };
 
-   // res = SetupUser().WithErrorHandler([](auto error) {
-   //    error->Push(
-   //        { MOCKER_NAMESPACE_ERROR_SETUP_USER, "Failed to setup user" });
-   // });
-   // if (!res) return { false, res.error };
+   res = SetupUser().WithErrorHandler([](auto error) {
+      error->Push(
+          { MOCKER_NAMESPACE_ERROR_SETUP_USER, "Failed to setup user" });
+   });
+   if (!res) return { false, res.error };
 
    auto mountRes = SetupMounting().WithErrorHandler([](auto error) {
       error->Push(
