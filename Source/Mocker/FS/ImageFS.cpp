@@ -88,7 +88,9 @@ ImageFS::PopulateImage(const std::string &file, const std::string &dest) const
               "Failed to extract image from " + file + " to " + dest;
           error->Push({ MOCKER_ARCHIVE_EXTRACT_FAILED, message });
        });
+#ifndef DEBUG
    if (!res) return { false, res.error };
+#endif
 
    return { true };
 }

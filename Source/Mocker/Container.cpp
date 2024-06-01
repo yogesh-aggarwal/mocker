@@ -10,7 +10,7 @@ Container::Container(Ref<Context> context, const Config &config)
     : m_PID(-1), m_Context(context), m_Config(config)
 {
    m_Namespace = CreateRef<Namespace>(Namespace::Config {
-       .mountPoint = "/home/yogesh/Desktop/ubuntu",
+       .mountPoint = "/home/yogesh/Desktop/mocker_images/alpine",
        .hostname   = "mocker",
    });
 }
@@ -169,7 +169,7 @@ Container::Run()
 
    m_PID = result;
 
-   printf("Container is running with PID: %d...\n", result);
+   printf("Container is running with PID: %d\n", result);
 
    return res;
 }

@@ -22,7 +22,7 @@ main()
    Ref<Image> image = CreateRef<Image>(ctx->GetFSContext(),
                                        Image::Config {
                                            .alias = "ping-ping-ping",
-                                           .path  = "alpine (latest)",
+                                           .path  = "alpine",
                                        });
 
    auto _ = image->Pull(IMAGE_SERVER);
@@ -31,8 +31,6 @@ main()
       _.error->Print();
       return EXIT_FAILURE;
    }
-
-   return 0;
 
    Ref<Container> c = CreateRef<Container>(ctx,
                                            Container::Config {
