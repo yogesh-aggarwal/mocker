@@ -135,11 +135,12 @@ Error::Print(const std::string &title) const
       const auto &error = m_Errors[i];
 
       int indent = 1                    // (
+                   + 2                  // "00"
                    + log10(i + 1) + 1   // i + 1
                    + 1                  // )
                    + 1;                 // ' '
 
-      printf("\n(%d) [E:%d] %s:%d:%d\n%s\"%s\"",
+      printf("\n(%03d) [E:%d] %s:%d:%d\n%s\"%s\"",
              i + 1,
              error.GetCode(),
              error.GetLocation().file_name(),

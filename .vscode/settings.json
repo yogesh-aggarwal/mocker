@@ -77,6 +77,10 @@
 		"forward_list": "cpp",
 		"unordered_set": "cpp",
 		"future": "cpp",
-		"valarray": "cpp"
+		"valarray": "cpp",
+		"charconv": "cpp",
+		"expected": "cpp",
+		"format": "cpp",
+		"span": "cpp"
 	}
 }
