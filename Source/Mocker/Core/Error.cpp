@@ -112,13 +112,22 @@ Error::Print(const std::string &title) const
 
    const int shellColumns = 80;
 
+   /* Print instructions on how to read the error trace */
    printf("%s", std::string(shellColumns, '-').c_str());
+
+   char instructions[100];
+   sprintf(instructions,
+           "(1) = Bottom most layer   &   (%d) = Top most layer",
+           static_cast<int>(m_Errors.size()));
+   PrintAtCenter(shellColumns, instructions, "|*--*[", "]*--*|");
+
+   /* Print separator */
+   printf("%s", std::string(shellColumns, '-').c_str());
+
+   /* Print block's header */
    if (title.size() > 0)
    {
-      printf("\n| %s", title.c_str());
-      printf("%s", std::string(shellColumns - title.size() - 3, ' ').c_str());
-      printf("|\n");
-      printf("%s", std::string(shellColumns, '-').c_str());
+      PrintAtCenter(shellColumns, title, "[", "]", false, true);
    }
 
    for (int i = 0; i < m_Errors.size(); i++)
@@ -149,6 +158,34 @@ void
 Error::Raise() const
 {
    throw *this;
+}
+
+//-----------------------------------------------------------------------------
+
+void
+Error::PrintAtCenter(int         shellColumns,
+                     std::string message,
+                     std::string startDecorator,
+                     std::string endDecorator,
+                     bool        separatorAtStart,
+                     bool        separatorAtEnd) const
+{
+   int totalWhitespaces = shellColumns              //
+                          - startDecorator.size()   //
+                          - endDecorator.size()     //
+                          - message.size();
+   int leftWhitespaces  = totalWhitespaces / 2;
+   int rightWhitespaces = totalWhitespaces - leftWhitespaces;
+
+   if (separatorAtStart) printf("%s", std::string(shellColumns, '-').c_str());
+
+   printf("\n%s", startDecorator.c_str());
+   printf("%s", std::string(leftWhitespaces, ' ').c_str());
+   printf("%s", message.c_str());
+   printf("%s", std::string(rightWhitespaces, ' ').c_str());
+   printf("%s\n", endDecorator.c_str());
+
+   if (separatorAtEnd) printf("%s", std::string(shellColumns, '-').c_str());
 }
 
 //-----------------------------------------------------------------------------

@@ -136,4 +136,13 @@ public:
 
    void
    Raise() const;
+
+private:
+   void
+   PrintAtCenter(int         shellColumns,
+                 std::string message,
+                 std::string startDecorator   = "",
+                 std::string endDecorator     = "",
+                 bool        separatorAtStart = false,
+                 bool        separatorAtEnd   = false) const;
 };
