@@ -3,6 +3,7 @@
 #include <iostream>
 #include <filesystem>
 
+#include <Mocker/Core/Syscall.hpp>
 #include <Mocker/Utility/NetworkFile.hpp>
 
 //-----------------------------------------------------------------------------
@@ -121,7 +122,71 @@ Image::Remove() const
 Result<bool>
 Image::Replicate(const std::string &destination) const
 {
-   return Result<bool> { false };
+   std::filesystem::path imagePath { m_FSContext->GetImageFS()->GetPath() +
+                                     "/" + m_Config.path };
+
+   /* Check for the existance of the image */
+   try
+   {
+      if (!std::filesystem::exists(imagePath))
+      {
+         return Result<bool> {
+            false,
+            new Error({ MOCKER_IMAGE_ERROR_REPLICATE_FAILED_IMAGE_NOT_FOUND,
+                        "Image does not exist in the source path" })
+         };
+      }
+   }
+   catch (const std::filesystem::filesystem_error &e)
+   {
+      return Result<bool> {
+         false,
+         new Error({ FILE_IO, "Error while checking image files' existence" })
+      };
+   }
+
+   /* Check for the existance of the destination */
+   try
+   {
+      if (!std::filesystem::exists(destination))
+      {
+         auto res =
+             Syscall::MKDIR(destination, 0755)
+                 .WithErrorHandler([&](Ref<Error> error) {
+                    error->Push(
+                        { MOCKER_IMAGE_ERROR_REPLICATE_FAILED_DESTINATION_NOT_FOUND,
+                          "Failed to replicate image to the target " +
+                              destination });
+                 });
+         if (!res) return { false, res.error };
+      }
+   }
+   catch (const std::filesystem::filesystem_error &e)
+   {
+      return Result<bool> {
+         false,
+         new Error({ FILE_IO, "Error while checking destination's existence" })
+      };
+   }
+
+   /* Copy the image to the destination */
+   try
+   {
+      std::filesystem::copy(imagePath,
+                            destination,
+                            std::filesystem::copy_options::recursive);
+   }
+   catch (const std::filesystem::filesystem_error &e)
+   {
+      return Result<bool> {
+         false,
+         new Error(
+             { MOCKER_IMAGE_ERROR_REPLICATE_FAILED_COPY_FAILED,
+               "Failed to replicate image to the destination " + destination })
+      };
+   }
+
+   return Result<bool> { true };
 }
 
 //-----------------------------------------------------------------------------
