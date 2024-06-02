@@ -172,12 +172,15 @@ Image::Replicate(const std::string &destination) const
    /* Copy the image to the destination */
    try
    {
-      std::filesystem::copy(imagePath,
-                            destination,
-                            std::filesystem::copy_options::recursive);
+      std::filesystem::copy(
+          imagePath,
+          destination,
+          std::filesystem::copy_options::recursive |
+              std::filesystem::copy_options::overwrite_existing);
    }
    catch (const std::filesystem::filesystem_error &e)
    {
+      printf("Error: %s\n", e.what());
       return Result<bool> {
          false,
          new Error(
