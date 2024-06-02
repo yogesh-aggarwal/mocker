@@ -3,6 +3,8 @@
 #include <iostream>
 #include <filesystem>
 
+#include <Mocker/Utility/NetworkFile.hpp>
+
 //-----------------------------------------------------------------------------
 
 Image::Image(Ref<FSContext> fsContext, const Config &config)
@@ -55,16 +57,7 @@ Image::CheckExists() const
 Result<bool>
 Image::Pull(const std::string &repository) const
 {
-   const std::string imageURL    = repository + "/" + m_Config.path;
-   const std::string metadataURL = imageURL + "/metadata.json";
-
-   std::printf("Fetching %s as \"%s\" from %s%s\n",
-               m_Config.path.c_str(),
-               m_Config.alias.c_str(),
-               imageURL.c_str(),
-               ".tar.gz");
-
-   std::filesystem::path srcPath { "/home/yogesh/Desktop/mocker_images/" +
+   std::filesystem::path srcPath { m_FSContext->GetImageFS()->GetPath() + "/" +
                                    m_Config.path + ".tar.gz" };
    std::filesystem::path destPath { m_FSContext->GetImageFS()->GetPath() + "/" +
                                     m_Config.path };
@@ -88,13 +81,27 @@ Image::Pull(const std::string &repository) const
       };
    }
 
+   const std::string imageURL    = repository + "/" + m_Config.path + ".tar.gz";
+   const std::string metadataURL = imageURL + "/metadata.json";
+
+   std::printf("Fetching %s as \"%s\" from %s\n\n",
+               m_Config.path.c_str(),
+               m_Config.alias.c_str(),
+               imageURL.c_str());
+
+   /* Fetch Image from the repository */
+   NetworkFile imageFile(imageURL, srcPath.string());
+   auto        res = imageFile.Fetch().WithErrorHandler([](Ref<Error> error) {
+      error->Push({ MOCKER_IMAGE_ERROR_PULL_FAILED, "Failed to pull image" });
+   });
+
    /* Extract Image contents to destination dir */
-   auto res = m_FSContext->GetImageFS()
-                  ->PopulateImage(srcPath.string(), destPath.string())
-                  .WithErrorHandler([](Ref<Error> error) {
-                     error->Push({ MOCKER_IMAGE_ERROR_POPULATE_FAILED,
-                                   "Failed to extract image" });
-                  });
+   res = m_FSContext->GetImageFS()
+             ->PopulateImage(srcPath.string(), destPath.string())
+             .WithErrorHandler([](Ref<Error> error) {
+                error->Push({ MOCKER_IMAGE_ERROR_POPULATE_FAILED,
+                              "Failed to extract image" });
+             });
    return res;
 }
 
