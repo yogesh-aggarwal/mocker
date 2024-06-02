@@ -4,13 +4,19 @@
 #include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
 
+#include <Mocker/Utility/Common.hpp>
+
 //-----------------------------------------------------------------------------
 
 Container::Container(Ref<Context> context, const Config &config)
-    : m_PID(-1), m_Context(context), m_Config(config)
+    : m_PID(-1), m_Context(context), m_Config(config),
+      m_ID(Common::GenerateNanoID())
 {
+   const std::string mountPoint =
+       context->GetFSContext()->GetContainerFS()->GetPath() + "/" + m_ID;
+
    m_Namespace = CreateRef<Namespace>(Namespace::Config {
-       .mountPoint = "/tmp/mocker/images/alpine",
+       .mountPoint = mountPoint,
        .hostname   = "mocker",
    });
 }
@@ -21,7 +27,7 @@ Container::Container(Ref<Context>     context,
                      const Config    &config,
                      const Namespace &ns)
     : m_PID(-1), m_Context(context), m_Config(config),
-      m_Namespace(CreateRef<Namespace>(ns))
+      m_Namespace(CreateRef<Namespace>(ns)), m_ID(Common::GenerateNanoID())
 {
 }
 
@@ -30,8 +36,31 @@ Container::Container(Ref<Context>     context,
 Container::Container(Ref<Context>   context,
                      const Config  &config,
                      Ref<Namespace> ns)
-    : m_PID(-1), m_Context(context), m_Config(config), m_Namespace(ns)
+    : m_PID(-1), m_Context(context), m_Config(config), m_Namespace(ns),
+      m_ID(Common::GenerateNanoID())
 {
+}
+
+//-----------------------------------------------------------------------------
+
+Result<bool>
+Container::Init()
+{
+   auto res = Syscall::MKDIR(m_Namespace->GetMountPoint(), 0755)
+                  .WithErrorHandler([](Ref<Error> error) {
+                     error->Push({ MOCKER_CONTAINER_ERROR_CREATING_MOUNT_POINT,
+                                   "Failed to create container directory" });
+                  });
+   if (!res) return { false, res.error };
+
+   auto _ = m_Config.image->Replicate(m_Namespace->GetMountPoint())
+                .WithErrorHandler([](Ref<Error> error) {
+                   error->Push({ MOCKER_CONTAINER_ERROR_POPULATING_MOUNT_POINT,
+                                 "Failed to replicate image" });
+                });
+   if (!_) return { false, _.error };
+
+   return { true };
 }
 
 //-----------------------------------------------------------------------------
@@ -66,6 +95,14 @@ Container::Container(Ref<Context>   context,
 //       };
 //    }
 // }
+
+//-----------------------------------------------------------------------------
+
+std::string
+Container::GetID() const
+{
+   return m_ID;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -127,6 +164,21 @@ Container::Terminate()
 //-----------------------------------------------------------------------------
 
 Result<bool>
+Container::Purge()
+{
+   auto res = Syscall::RMDIR(m_Namespace->GetMountPoint())
+                  .WithErrorHandler([](Ref<Error> error) {
+                     error->Push({ MOCKER_CONTAINER_ERROR_CREATING_MOUNT_POINT,
+                                   "Failed to remove container directory" });
+                  });
+   if (!res) return { false, res.error };
+
+   return { true };
+}
+
+//-----------------------------------------------------------------------------
+
+Result<bool>
 Container::Run()
 {
    if (m_PID != -1)
@@ -139,6 +191,12 @@ Container::Run()
    }
 
    Result<bool> res { false };
+
+   res = Init().WithErrorHandler([&](Ref<Error> error) {
+      error->Push({ MOCKER_CONTAINER_RUN_FAILED,
+                    "Failed to initialize the container: " + m_ID });
+   });
+   if (!res) return { false, res.error };
 
    size_t stackSize = 1024 * 1024;   // 1 MB
    char  *stack     = new char[stackSize];
@@ -190,9 +248,11 @@ Container::ProceessFn(void *args)
    const std::string              &command       = std::get<1>(*data);
    const std::vector<std::string> &secondaryArgs = std::get<2>(*data);
 
-   res = container->GetNamespace()->Init().WithErrorHandler([](auto error) {
-      error->Print("Namespace initialization failed");
-   });
+   res =
+       container->GetNamespace()->Init().WithErrorHandler([](Ref<Error> error) {
+          error->Push({ MOCKER_CONTAINER_RUN_FAILED,
+                        "Namespace initialization failed" });
+       });
    if (!res) return EXIT_FAILURE;
 
    container->Execute(command, secondaryArgs);
@@ -214,7 +274,7 @@ Container::Execute(const std::string              &command,
 
    // Execute the new program using execv
    execv(command.c_str(), const_cast<char **>(execArgs));
-   perror("execv failed");   // If execv returns, there was an error
+   perror("[MOCKER] execv failed");   // If execv returns, there was an error
 }
 
 //-----------------------------------------------------------------------------

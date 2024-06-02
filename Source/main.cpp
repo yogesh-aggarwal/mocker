@@ -37,7 +37,7 @@ main()
                                                .alias = "ping-ping-ping",
                                                .image = image,
                                            });
-
+   printf("Container ID: %s\n", c->GetID().c_str());
    _ = c->Run();
    if (!_)
    {

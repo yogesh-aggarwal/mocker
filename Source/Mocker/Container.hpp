@@ -17,6 +17,7 @@ public:
 
 private:
    pid_t          m_PID;
+   std::string    m_ID;
    Ref<Context>   m_Context;
    Config         m_Config;
    Ref<Namespace> m_Namespace;
@@ -28,6 +29,12 @@ public:
 
    // static Result<Ref<Container>>
    // FromConfigFile(const std::string &path);
+
+   Result<bool>
+   Init();
+
+   std::string
+   GetID() const;
 
    void
    SetAlias(std::string alias);
@@ -43,6 +50,9 @@ public:
 
    Result<bool>
    Terminate();
+
+   Result<bool>
+   Purge();
 
    bool
    IsRunning() const;
