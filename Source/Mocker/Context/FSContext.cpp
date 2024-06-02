@@ -1,9 +1,8 @@
 #include "FSContext.hpp"
 
 FSContext::FSContext(std::string const &root)
-    : m_ImageFS { CreateRef<ImageFS>(root) }, m_ContainerFS {
-         CreateRef<ContainerFS>(root)
-      }
+    : m_ImageFS { CreateRef<ImageFS>(root) },
+      m_ContainerFS { CreateRef<ContainerFS>(root) }
 {
 }
 
@@ -11,6 +10,9 @@ Result<bool>
 FSContext::Init()
 {
    Result<bool> res { false };
+
+   // TODO: Add file CRUD check in both ImageFS and ContainerFS to ensure proper
+   // permissions and file structure
 
    res = m_ImageFS->Init().WithErrorHandler([](Ref<Error> error) {
       error->Push(ErrorUnit(MOCKER_IMAGE_FILESYSTEM_INITIALIZE_FAILED,
