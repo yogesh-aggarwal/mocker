@@ -69,18 +69,29 @@ endif()
 # ---- Link Libraries --------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+message("[(---- Linking Libraries ----)]")
+
+# CURL Library
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CURL_LIBRARIES})
 
+# LibArchive Library
 find_package(LibArchive REQUIRED)
 include_directories(${LibArchive_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LibArchive_LIBRARIES})
 
-message("[(---- Linking Libraries ----)]")
-# LINK_LIBRARY("openssl" crypto)
+# fmt Library
 LINK_LIBRARY("fmt" fmt::fmt)
+
+# yaml-cpp Library
 LINK_LIBRARY("yaml-cpp" yaml-cpp::yaml-cpp)
+
+# nanoid_cpp Library
+add_subdirectory("Vendor/nanoid_cpp")
+target_link_libraries(${PROJECT_NAME} PRIVATE nanoid)
+include_directories("Vendor/nanoid_cpp/inc")
+
 message("[(---- Done Linking Libraries ----)]\n")
 
 # ----------------------------------------------------------------------------------------------------------------------
