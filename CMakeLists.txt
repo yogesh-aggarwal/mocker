@@ -69,9 +69,16 @@ endif()
 # ---- Link Libraries --------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CURL_LIBRARIES})
+
+find_package(LibArchive REQUIRED)
+include_directories(${LibArchive_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LibArchive_LIBRARIES})
+
 message("[(---- Linking Libraries ----)]")
 # LINK_LIBRARY("openssl" crypto)
-find_package(LibArchive REQUIRED)
 LINK_LIBRARY("fmt" fmt::fmt)
 LINK_LIBRARY("yaml-cpp" yaml-cpp::yaml-cpp)
 message("[(---- Done Linking Libraries ----)]\n")
