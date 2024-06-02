@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <filesystem>
 
 //-----------------------------------------------------------------------------
 
@@ -28,30 +29,46 @@ Namespace::Namespace(const Config &config) : m_Config(config)
 
 //-----------------------------------------------------------------------------
 
+std::string
+Namespace::GetMountPoint() const
+{
+   return m_Config.mountPoint;
+}
+
+//-----------------------------------------------------------------------------
+
+std::string
+Namespace::GetHostname() const
+{
+   return m_Config.hostname;
+}
+
+//-----------------------------------------------------------------------------
+
 Result<bool>
 Namespace::Init() const
 {
    Result<bool> res { false };
 
-   res = SetupLoggingIO().WithErrorHandler([](auto error) {
+   res = SetupLoggingIO().WithErrorHandler([](Ref<Error> error) {
       error->Push({ MOCKER_NAMESPACE_ERROR_SETUP_LOGGING_IO,
                     "Failed to setup logging IO" });
    });
    if (!res) return { false, res.error };
 
-   res = SetupHostname().WithErrorHandler([](auto error) {
+   res = SetupHostname().WithErrorHandler([](Ref<Error> error) {
       error->Push({ MOCKER_NAMESPACE_ERROR_SETUP_HOSTNAME,
                     "Failed to setup hostname" });
    });
    if (!res) return { false, res.error };
 
-   res = SetupUser().WithErrorHandler([](auto error) {
+   res = SetupUser().WithErrorHandler([](Ref<Error> error) {
       error->Push(
           { MOCKER_NAMESPACE_ERROR_SETUP_USER, "Failed to setup user" });
    });
    if (!res) return { false, res.error };
 
-   auto mountRes = SetupMounting().WithErrorHandler([](auto error) {
+   auto mountRes = SetupMounting().WithErrorHandler([](Ref<Error> error) {
       error->Push(
           { MOCKER_NAMESPACE_ERROR_SETUP_MOUNT, "Failed to setup mounting" });
    });
@@ -71,7 +88,7 @@ Namespace::SetupLoggingIO() const
 
    // Redirect stdin to child's stdin
    res = Syscall::DUP2(STDIN_FILENO, STDIN_FILENO)
-             .WithErrorHandler([](auto error) {
+             .WithErrorHandler([](Ref<Error> error) {
                 error->Push({ DUP2_FAILED,
                               "Failed to redirect stdin to child's stdin" });
              });
@@ -79,7 +96,7 @@ Namespace::SetupLoggingIO() const
 
    // Redirect stdout to child's stdout
    res = Syscall::DUP2(STDOUT_FILENO, STDOUT_FILENO)
-             .WithErrorHandler([](auto error) {
+             .WithErrorHandler([](Ref<Error> error) {
                 error->Push({ DUP2_FAILED,
                               "Failed to redirect stdout to child's stdout" });
              });
@@ -87,7 +104,7 @@ Namespace::SetupLoggingIO() const
 
    // Redirect stdout to child's stderr
    res = Syscall::DUP2(STDERR_FILENO, STDERR_FILENO)
-             .WithErrorHandler([](auto error) {
+             .WithErrorHandler([](Ref<Error> error) {
                 error->Push({ DUP2_FAILED,
                               "Failed to redirect stderr to child's stderr" });
              });
@@ -171,29 +188,39 @@ Namespace::SetupMounting() const
 {
    Result<int> res { false };
 
+   // Check if the mount point already exists.
+   if (!std::filesystem::exists(m_Config.mountPoint))
+   {
+      return { false,
+               new Error {
+                   { MOCKER_NAMESPACE_ERROR_SETUP_MOUNT_POINT_DOES_NOT_EXIST,
+                     "Mount point does not exist" } } };
+   }
+
    // Define the new root path
    res = Syscall::MOUNT("none", "/", NULL, MS_REC | MS_PRIVATE, NULL)
-             .WithErrorHandler([](auto error) {
-                error->Push({ MOUNT_FAILED, "chroot has failed" });
-             });
-   if (!res) return { false, res.error };
-   
-   // Define the new root path
-   res = Syscall::CHROOT(m_Config.mountPoint.c_str())
-             .WithErrorHandler([](auto error) {
+             .WithErrorHandler([](Ref<Error> error) {
                 error->Push({ MOUNT_FAILED, "chroot has failed" });
              });
    if (!res) return { false, res.error };
 
    // Define the new root path
-   res = Syscall::CHDIR("/").WithErrorHandler([](auto error) {
+   res = Syscall::CHROOT(m_Config.mountPoint.c_str())
+             .WithErrorHandler([](Ref<Error> error) {
+                error->Push({ MOUNT_FAILED, "chroot has failed" });
+             });
+   if (!res) return { false, res.error };
+
+   // Define the new root path
+   res = Syscall::CHDIR("/").WithErrorHandler([](Ref<Error> error) {
       error->Push({ MOUNT_FAILED, "chdir to / has failed" });
    });
    if (!res) return { false, res.error };
 
-   auto mountRes = MountVirtualFileSystem().WithErrorHandler([](auto error) {
-      error->Push({ MOUNT_FAILED, "Failed to mount virtual file system" });
-   });
+   auto mountRes =
+       MountVirtualFileSystem().WithErrorHandler([](Ref<Error> error) {
+          error->Push({ MOUNT_FAILED, "Failed to mount virtual file system" });
+       });
    if (!mountRes) return mountRes;
 
    return { true };
@@ -210,7 +237,7 @@ Namespace::MountVirtualFileSystem() const
    // Mount /proc
    // ------------------------------------------------------------------------
 
-   res = Syscall::MKDIR("proc", 0755).WithErrorHandler([](auto error) {
+   res = Syscall::MKDIR("proc", 0755).WithErrorHandler([](Ref<Error> error) {
       if (error->Last().GetCode() == ErrorCode::MKDIR_EXISTED)
       {
          error->Clear();
@@ -231,7 +258,7 @@ Namespace::MountVirtualFileSystem() const
    for (const auto &[source, target, fsType] : mounts)
    {
       res = Syscall::MOUNT(source, target, fsType, 0, NULL)
-                .WithErrorHandler([](auto error) {
+                .WithErrorHandler([](Ref<Error> error) {
                    if (error->Last().GetCode() ==
                        ErrorCode::OPERATION_NOT_PERMITTED)
                    {
@@ -254,9 +281,10 @@ Result<bool>
 Namespace::SetupHostname() const
 {
    Result<int> res =
-       Syscall::SETHOSTNAME(m_Config.hostname).WithErrorHandler([](auto error) {
-          error->Push({ SETHOSTNAME_FAILED, "Failed to set hostname" });
-       });
+       Syscall::SETHOSTNAME(m_Config.hostname)
+           .WithErrorHandler([](Ref<Error> error) {
+              error->Push({ SETHOSTNAME_FAILED, "Failed to set hostname" });
+           });
    if (!res) return { false, res.error };
 
    return { true };
