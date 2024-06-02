@@ -49,10 +49,12 @@ Archive::ExtractTo(const std::string &destination) const
    struct archive_entry *entry;
    while (archive_read_next_header(a, &entry) == ARCHIVE_OK)
    {
-      const char *currentFile = archive_entry_pathname(entry);
+      const char       *currentFile = archive_entry_pathname(entry);
+      const std::string currentFileAbsolutePath =
+          destination + "/" + currentFile;
 
       // Set the new path for the extracted entry
-      archive_entry_set_pathname(entry, destination.c_str());
+      archive_entry_set_pathname(entry, currentFileAbsolutePath.c_str());
 
       // Write entry to disk
       r = archive_write_header(ext, entry);
