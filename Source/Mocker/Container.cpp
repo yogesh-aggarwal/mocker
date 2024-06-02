@@ -10,7 +10,7 @@ Container::Container(Ref<Context> context, const Config &config)
     : m_PID(-1), m_Context(context), m_Config(config)
 {
    m_Namespace = CreateRef<Namespace>(Namespace::Config {
-       .mountPoint = "/home/yogesh/Desktop/mocker_images/alpine",
+       .mountPoint = "/tmp/mocker/images/alpine",
        .hostname   = "mocker",
    });
 }

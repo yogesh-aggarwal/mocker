@@ -86,5 +86,5 @@ Archive::ExtractTo(const std::string &destination) const
    archive_write_close(ext);
    archive_write_free(ext);
 
-   return { false, nullptr };
+   return { true };
 }

@@ -47,17 +47,13 @@ NetworkFile::Fetch()
          return { true,
                   new Error({ ErrorCode::MOCKER_NETWORK_FETCH_FAILED,
                               "Failed to fetch file: " + m_URL }) };
-         // TODO: Handle error
-         // std::cerr << "curl_easy_perform() failed: " <<
-         // curl_easy_strerror(res)
-         //           << std::endl;
       }
 
       curl_easy_cleanup(curl);
       outfile.close();
    }
 
-   return { false, nullptr };
+   return { true };
 }
 
 //-----------------------------------------------------------------------------

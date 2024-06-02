@@ -68,6 +68,9 @@ Image::Pull(const std::string &repository) const
    {
       bool isAlreadyExists = std::filesystem::exists(destPath);
 #ifdef DEBUG
+      std::cout << "[DEBUG] Image::Pull: Image extraction path already exists, "
+                   "deleting it"
+                << std::endl;
       if (isAlreadyExists) { std::filesystem::remove_all(destPath); }
 #else
       if (isAlreadyExists) return Result<bool> { true };
